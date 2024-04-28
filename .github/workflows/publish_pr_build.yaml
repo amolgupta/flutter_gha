@@ -1,9 +1,15 @@
 name: PR build
 
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to run the workflow on'
+        required: true
+        default: 'main'
+      custom_message:
+        description: 'Custom message'
+        required: false
 
 jobs:
   build:
