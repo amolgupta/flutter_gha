@@ -36,10 +36,6 @@ jobs:
       - name: Install Fastlane
         run: sudo gem install fastlane
 
-      - name: Install Firebase CLI
-        run: |
-          curl -sL https://firebase.tools | bash
-
       - name: Run lint
         run: flutter analyze
 
@@ -49,39 +45,13 @@ jobs:
       - name: Build APK
         run: flutter build apk
 
-      #
-      #      - name: Build IPA (iOS)
-      #        env:
-      #          APPLE_ID: ${{ secrets.APPLE_ID }}
-      #          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-      #        run: |
-      #          flutter build ios --release --no-codesign
-      #
-      #          # Archive to create a valid IPA
-      #          xcodebuild -workspace ios/Runner.xcworkspace \
-      #            -scheme Runner \
-      #            -sdk iphoneos \
-      #            -configuration Release \
-      #            -archivePath build/ios/Runner.xcarchive archive
-      #
-      #          # Export the IPA file
-      #          xcodebuild -exportArchive \
-      #            -archivePath build/ios/Runner.xcarchive \
-      #            -exportOptionsPlist ios/Runner/ExportOptions.plist \
-      #            -exportPath build/ios/ipa
-
-
-
-  test:
-    runs-on: macos-latest
-    needs: build
-    steps:
       - name: Run tests
         run: flutter test
 
+
   publish:
     runs-on: macos-latest
-    needs: test
+    needs: build
     steps:
 
       - name: Upload APK
@@ -95,30 +65,3 @@ jobs:
         with:
           name: ios-ipa
           path: build/ios/iphoneos/Runner.app
-
-      - name: Authenticate with Firebase
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: |
-          echo "Authenticated with Firebase"
-
-      - name: Upload Android to Firebase App Distribution
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: |
-          firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk \
-            --app 1:15629140963:android:41625edda795079de016d6 \
-            --groups "testers" \
-            --release-notes "New release for Android"     
-
-
-      - name: Upload iOS to Firebase App Distribution
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: |
-          cd build/ios/iphoneos
-          zip -r app-release.ipa Runner.app
-          firebase appdistribution:distribute app-release.ipa \
-            --app 1:15629140963:ios:6efd551c306507e7e016d6 \
-            --groups "testers" \
-            --release-notes "New release for iOS"
