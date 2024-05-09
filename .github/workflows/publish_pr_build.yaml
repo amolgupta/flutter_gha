@@ -1,4 +1,4 @@
-name: PR build
+name: Deploy to Firebase App Distribution
 
 on:
   workflow_dispatch:
@@ -10,12 +10,22 @@ on:
       custom_message:
         description: 'Custom message'
         required: false
+      version_number:
+        description: 'Version number'
+        required: true
+
 
 jobs:
   build:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set Version Number
+        run: |
+          VERSION_NUMBER="${{ github.event.inputs.version_number }}"
+          sed -i "s/^version: .*/version: $VERSION_NUMBER/" pubspec.yaml
+        shell: bash
 
       - name: Cache Android, iOS SDK, and Flutter dependencies
         uses: actions/cache@v3
@@ -33,7 +43,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.16.9'
+          flutter-version-file: pubspec.yaml
           cache: true
 
       - name: Install dependencies
@@ -71,10 +81,10 @@ jobs:
       #            -archivePath build/ios/Runner.xcarchive archive
       #
       #          # Export the IPA file
-      #          xcodebuild -exportArchive \
-      #            -archivePath build/ios/Runner.xcarchive \
-      #            -exportOptionsPlist ios/Runner/ExportOptions.plist \
-      #            -exportPath build/ios/ipa
+                xcodebuild -exportArchive \
+                  -archivePath build/ios/Runner.xcarchive \
+                  -exportOptionsPlist ios/Runner/ExportOptions.plist \
+                  -exportPath build/ios/ipa
 
 
 
