@@ -1,0 +1,60 @@
+# .github/workflows/release.yml
+name: Release Workflow
+
+on:
+  release:
+    types:
+      - published
+
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yaml
+    with:
+      version: "${{ github.event.inputs.version_number }}"
+
+  publish:
+    runs-on: macos-latest
+    needs: build
+    steps:
+      - name: Download Android APK
+        uses: actions/download-artifact@v3
+        with:
+          name: android-apk
+          path: build
+
+      - name: Download iOS IPA
+        uses: actions/download-artifact@v3
+        with:
+          name: ios-ipa
+          path: build
+
+      - name: Install Firebase CLI
+        run: |
+          curl -sL https://firebase.tools | bash
+
+      - name: Authenticate with Firebase
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          echo "Authenticated with Firebase"
+
+      - name: Upload Android to Firebase App Distribution
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          firebase appdistribution:distribute build/app-release.apk \
+            --app 1:15629140963:android:41625edda795079de016d6 \
+            --groups "testers" \
+            --release-notes "${{ github.event.inputs.release_notes }}"
+
+      - name: Upload iOS to Firebase App Distribution
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          cd build/ios/iphoneos
+          zip -r app-release.ipa ios-ipa
+          firebase appdistribution:distribute app-release.ipa \
+            --app 1:15629140963:ios:6efd551c306507e7e016d6 \
+            --groups "testers" \
+            --release-notes "New release for iOS"

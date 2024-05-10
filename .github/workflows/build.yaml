@@ -17,7 +17,7 @@ jobs:
 
       - name: Set Version Number
         run: |
-          VERSION_NUMBER=" ${{ inputs.version }}"
+          VERSION_NUMBER="${{ inputs.version }}"
           if [[ "$OSTYPE" == "darwin"* ]]; then
           sed -i '' "s/^version: .*/version: $VERSION_NUMBER/" pubspec.yaml
           else
