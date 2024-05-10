@@ -1,0 +1,30 @@
+name: Nightly Build
+
+on:
+  schedule:
+    - cron: "0 0 * * *"  # Every day at 00:00 UTC
+  workflow_dispatch:  # Allows manual trigger if needed
+
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yaml
+    with:
+      version: "1.0.0"
+
+  publish:
+    runs-on: macos-latest
+    needs: build
+    steps:
+      - name: Download Android APK
+        uses: actions/download-artifact@v3
+        with:
+          name: android-apk
+          path: build
+
+      - name: Download iOS IPA
+        uses: actions/download-artifact@v3
+        with:
+          name: ios-ipa
+          path: build
+
