@@ -1,0 +1,70 @@
+name: Test Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to run the workflow on'
+        required: true
+        default: 'main'
+      version_number:
+        description: 'Version number'
+        required: true
+      release_notes:
+        description: 'Release notes'
+        required: true
+
+jobs:
+  build_android:
+    uses: ./.github/workflows/android.yaml
+    with:
+      version: "${{ github.event.inputs.version_number }}"
+
+  build_ios:
+    uses: ./.github/workflows/ios.yaml
+    with:
+      version: "${{ github.event.inputs.version_number }}"
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: [ build_android, build_ios ]
+    steps:
+      - name: Download Android App bundle
+        uses: actions/download-artifact@v3
+        with:
+          name: app-release.apk
+          path: build
+
+      - name: Download iOS IPA
+        uses: actions/download-artifact@v3
+        with:
+          name: Runner.ipa
+          path: build
+
+      - name: Install Firebase CLI
+        run: |
+          curl -sL https://firebase.tools | bash
+
+      - name: Authenticate with Firebase
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          echo "Authenticated with Firebase"
+
+      - name: Upload Android to Firebase App Distribution
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          firebase appdistribution:distribute build/app-release.apk \
+            --app 1:961291773611:android:92252ef978171fbb57b9ee \
+            --groups "testers" \
+            --release-notes "${{ github.event.inputs.release_notes }}"
+
+      - name: Upload iOS to Firebase App Distribution
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          firebase appdistribution:distribute build/Runner.ipa \
+            --app 1:961291773611:ios:042e0a1e9ea5238a57b9ee \
+            --groups "testers" \
+            --release-notes "New release for iOS"

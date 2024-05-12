@@ -7,11 +7,11 @@ on:
 
 jobs:
   build_android:
-    uses: ./.github/workflows/build_android.yaml
+    uses: ./.github/workflows/android.yaml
     with:
       version: "${{ github.event.pull_request.number }}"
 
   build_ios:
-    uses: ./.github/workflows/build_ios.yaml
+    uses: ./.github/workflows/ios.yaml
     with:
       version: "${{ github.event.pull_request.number }}"

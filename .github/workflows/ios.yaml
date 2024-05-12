@@ -1,0 +1,72 @@
+name: Build iOS
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Version number"
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set Version Number
+        run: |
+          VERSION_NUMBER="${{ inputs.version }}"
+          if [[ "$OSTYPE" == "darwin"* ]]; then
+          sed -i '' "s/^version: .*/version: $VERSION_NUMBER/" pubspec.yaml
+          else
+          sed -i "s/^version: .*/version: $VERSION_NUMBER/" pubspec.yaml
+          fi
+        shell: bash
+
+      - name: Cache iOS SDK and Flutter dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/Library/Developer/Xcode
+            ~/.pub-cache
+            ${{ github.workspace }}/.dart_tool
+          key: ${{ runner.os }}-sdk-flutter-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-sdk-flutter-${{ github.ref }}-
+            ${{ runner.os }}-sdk-flutter-
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version-file: pubspec.yaml
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Install Fastlane
+        run: sudo gem install fastlane
+
+      - name: Build iOS
+        run: flutter build ios --release --no-codesign
+
+      - name: Package .app to .ipa
+        run: |
+          mkdir Payload
+          cp -r build/ios/iphoneos/Runner.app Payload/Runner.app
+          zip -r Runner.ipa Payload
+          rm -rf Payload
+
+      - name: Upload .app
+        uses: actions/upload-artifact@v3
+        with:
+          name: Runner.app
+          path: build/ios/iphoneos/Runner.app
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v3
+        with:
+          name: Runner.ipa
+          path: Runner.ipa

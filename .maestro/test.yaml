@@ -1,0 +1,11 @@
+appId: org.github.flutter.gha.flutter_gha
+
+---
+- clearKeychain
+- clearState
+- launchApp
+- assertVisible: "You have pushed the button this many times:"
+- tapOn: "plusIcon"
+- assertVisible: "1"
+- tapOn: "plusIcon"
+- assertVisible: "2"
