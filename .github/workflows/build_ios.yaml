@@ -1,4 +1,4 @@
-name: Build artifacts
+name: Build iOS
 
 on:
   workflow_call:
@@ -25,11 +25,10 @@ jobs:
           fi
         shell: bash
 
-      - name: Cache Android, iOS SDK, and Flutter dependencies
+      - name: Cache iOS SDK and Flutter dependencies
         uses: actions/cache@v3
         with:
           path: |
-            ~/Library/Android/sdk
             ~/Library/Developer/Xcode
             ~/.pub-cache
             ${{ github.workspace }}/.dart_tool
@@ -50,26 +49,11 @@ jobs:
       - name: Install Fastlane
         run: sudo gem install fastlane
 
-      - name: Run lint
-        run: flutter analyze
-
       - name: Build iOS
         run: flutter build ios --release --no-codesign
-
-      - name: Build APK
-        run: flutter build appbundle
-
-      - name: Run tests
-        run: flutter test
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v3
-        with:
-          name: android-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
 
       - name: Upload IPA
         uses: actions/upload-artifact@v3
         with:
-          name: ios-ipa
+          name: Runner.app
           path: build/ios/iphoneos/Runner.app

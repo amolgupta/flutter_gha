@@ -6,7 +6,12 @@ on:
       - main
 
 jobs:
-  build:
-    uses: ./.github/workflows/build.yaml
+  build_android:
+    uses: ./.github/workflows/build_android.yaml
+    with:
+      version: "${{ github.event.pull_request.number }}"
+
+  build_ios:
+    uses: ./.github/workflows/build_ios.yaml
     with:
       version: "${{ github.event.pull_request.number }}"
