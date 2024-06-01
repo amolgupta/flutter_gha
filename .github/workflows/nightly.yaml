@@ -22,16 +22,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ build_android,build_ios ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Download Android App bundle
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: app-release.apk
           path: build
 
       - name: Download iOS IPA
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Runner.app
           path: build

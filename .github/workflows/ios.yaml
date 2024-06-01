@@ -13,7 +13,7 @@ jobs:
     name: Build
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set Version Number
         run: |
@@ -26,7 +26,7 @@ jobs:
         shell: bash
 
       - name: Cache iOS SDK and Flutter dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/Library/Developer/Xcode
@@ -50,7 +50,8 @@ jobs:
         run: sudo gem install fastlane
 
       - name: Build iOS
-        run: flutter build ios --release --no-codesign
+        run: |
+          flutter build ios --release --no-codesign
 
       - name: Package .app to .ipa
         run: |
@@ -59,14 +60,14 @@ jobs:
           zip -r Runner.ipa Payload
           rm -rf Payload
 
-      - name: Upload .app
-        uses: actions/upload-artifact@v3
+      - name: Upload app
+        uses: actions/upload-artifact@v4
         with:
-          name: Runner.app
+          name: app
           path: build/ios/iphoneos/Runner.app
 
       - name: Upload IPA
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: Runner.ipa
+          name: ipa
           path: Runner.ipa

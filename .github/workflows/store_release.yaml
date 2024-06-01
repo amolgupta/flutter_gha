@@ -32,13 +32,13 @@ jobs:
     needs: [ build_android, build_ios ]
     steps:
       - name: Download Android App bundle
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: app-release.aab
           path: build
 
       - name: Download iOS IPA
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Runner.app
           path: build
