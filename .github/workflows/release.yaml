@@ -1,0 +1,56 @@
+name: Release Artifacts
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  contents: write
+  uploads: write
+
+jobs:
+  build_android:
+    uses: ./.github/workflows/android.yaml
+    with:
+      version: ${{ github.event.release.tag_name }}
+
+  build_ios:
+    uses: ./.github/workflows/ios.yaml
+    with:
+      version: ${{ github.event.release.tag_name }}
+
+  publish:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    needs: [ build_android, build_ios ]
+    steps:
+      - name: Download Android App bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release.apk
+          path: build
+
+      - name: Download iOS IPA
+        uses: actions/download-artifact@v4
+        with:
+          name: ipa
+          path: build
+
+      - name: Create Release and Upload Artifacts
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build/app-release.apk
+            build/Runner.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#      - name: Upload Release Artifact
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ github.event.release.upload_url }}
+#          asset_path: build/app-release.apk
+#          asset_name: app-release.apk
+#          asset_content_type: application/zip
