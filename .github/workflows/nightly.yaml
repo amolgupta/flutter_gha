@@ -33,7 +33,7 @@ jobs:
       - name: Download iOS IPA
         uses: actions/download-artifact@v4
         with:
-          name: Runner.app
+          name: ipa
           path: build
 
       - name: E2E Tests

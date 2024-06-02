@@ -7,7 +7,10 @@ on:
         description: "Version number"
         required: true
         type: string
-
+      build_version:
+        description: "Build version"
+        required: true
+        type: string
 jobs:
   build:
     name: Build
@@ -52,11 +55,21 @@ jobs:
       - name: Run lint
         run: flutter analyze
 
+      - name: Validate and Convert Build Version
+        id: prep
+        run: |
+          if ! [[ "${{ inputs.build_version }}" =~ ^[0-9]+$ ]]; then
+            echo "Error: Build version must be a valid number"
+            exit 1
+          fi
+          BUILD_VERSION_INT=$((${{ inputs.build_version }} + 0))
+          echo "BUILD_VERSION_INT=$BUILD_VERSION_INT" >> $GITHUB_ENV
+
       - name: Build App bundle
         run: flutter build appbundle
 
       - name: Build Apk
-        run: flutter build apk
+        run: flutter build apk --build-number=$BUILD_VERSION_INT
 
       - name: Run tests
         run: flutter test

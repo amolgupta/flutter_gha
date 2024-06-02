@@ -7,7 +7,10 @@ on:
         description: "Version number"
         required: true
         type: string
-
+      build_version:
+        description: "Build version"
+        required: true
+        type: string
 jobs:
   build:
     name: Build
@@ -49,9 +52,20 @@ jobs:
       - name: Install Fastlane
         run: sudo gem install fastlane
 
+      - name: Validate and Convert Build Version
+        id: prep
+        run: |
+          if ! [[ "${{ inputs.build_version }}" =~ ^[0-9]+$ ]]; then
+            echo "Error: Build version must be a valid number"
+            exit 1
+          fi
+          BUILD_VERSION_INT=$((${{ inputs.build_version }} + 0))
+          echo "BUILD_VERSION_INT=$BUILD_VERSION_INT" >> $GITHUB_ENV
+          
+
       - name: Build iOS
         run: |
-          flutter build ios --release --no-codesign
+          flutter build ios --release --no-codesign --build-number=$BUILD_VERSION_INT
 
       - name: Package .app to .ipa
         run: |
